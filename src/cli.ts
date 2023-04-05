@@ -138,16 +138,17 @@ for (let schemaKey of Object.keys(spec.components.schemas)) {
 
   // Rename schema key and figure out if it's an app collection
   let isAppCollection = false;
+  let formatedSchemaKey = "";
   if (schemaKey.startsWith("Items")) {
-    schemaKey = "App" + schemaKey.slice(5);
+    formatedSchemaKey = "App" + schemaKey.slice(5);
     isAppCollection = true;
   }
   else {
-    schemaKey = "Directus" + schemaKey;
+    formatedSchemaKey = "Directus" + schemaKey;
   }
   
   // Build and append property line
-  const propertyLine = `  "${schemaKey}": components["schemas"]["${schemaKey}"];`;
+  const propertyLine = `  "${formatedSchemaKey}": components["schemas"]["${schemaKey}"];`;
   (isAppCollection
     ? exportAppCollectionsProperties
     : exportDirectusCollectionsProperties
@@ -155,7 +156,7 @@ for (let schemaKey of Object.keys(spec.components.schemas)) {
     
   // Build and append export line
   if (schemaKey !== "x-metadata") {   
-    const exportLine = `export type ${schemaKey} = components["schemas"]["${schemaKey}"];`;
+    const exportLine = `export type ${formatedSchemaKey} = components["schemas"]["${schemaKey}"];`;
     exportAllCollectionsLines.push(exportLine)
   }
 }

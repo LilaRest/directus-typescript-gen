@@ -115,6 +115,7 @@ const source = [
     exportCollectionsType,
     exportAllCollectionsTypes,
     "}",
+    "export {};"
 ].join(`\n`);
 await writeFile(resolve(process.cwd(), outFile), source, {
     encoding: `utf-8`,

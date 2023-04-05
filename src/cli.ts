@@ -175,12 +175,13 @@ const exportCollectionsType = `export type ${allCollectionsTypeName} = ${directu
 
 const source = [
   "declare global {",
-  baseSource,
-  exportAppCollectionsType,
-  exportDirectusCollectionsType,
-  exportCollectionsType,
-  exportAllCollectionsTypes,
+    baseSource,
+    exportAppCollectionsType,
+    exportDirectusCollectionsType,
+    exportCollectionsType,
+    exportAllCollectionsTypes,
   "}",
+  "export {};"
 ].join(`\n`);
 
 await writeFile(resolve(process.cwd(), outFile), source, {

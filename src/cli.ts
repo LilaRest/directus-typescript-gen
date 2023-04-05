@@ -132,26 +132,35 @@ const baseSource = await openApiTs(spec);
 
 const exportAppCollectionsProperties: string[] = [];
 const exportDirectusCollectionsProperties: string[] = [];
-const exportAllCollectionsTypes: string[] = [];
+let exportAllCollectionsLines: string[] = [];
 
 for (let schemaKey of Object.keys(spec.components.schemas)) {
 
+  // Rename schema key and figure out if it's an app collection
   let isAppCollection = false;
   if (schemaKey.startsWith("Items")) {
-    isAppCollection = true;
     schemaKey = "App" + schemaKey.slice(5);
+    isAppCollection = true;
   }
-
-  const propertyLine = `  ${schemaKey}: components["schemas"]["${schemaKey}"];`;
-  const exportLine = `export type ${schemaKey} = components["schemas"]["${schemaKey}"];`;
+  else {
+    schemaKey = "Directus" + schemaKey;
+  }
   
+  // Build and append property line
+  const propertyLine = `  "${schemaKey}": components["schemas"]["${schemaKey}"];`;
   (isAppCollection
     ? exportAppCollectionsProperties
     : exportDirectusCollectionsProperties
-  ).push(propertyLine);
-  
-  exportAllCollectionsTypes.push(exportLine)
+    ).push(propertyLine);
+    
+  // Build and append export line
+  if (schemaKey !== "x-metadata") {   
+    const exportLine = `export type ${schemaKey} = components["schemas"]["${schemaKey}"];`;
+    exportAllCollectionsLines.push(exportLine)
+  }
 }
+
+const exportAllCollectionsTypes = exportAllCollectionsLines.join(`\n`);
 
 const exportAppCollectionsType = `export type ${appCollectionsTypeName} = {\n${exportAppCollectionsProperties.join(
   `\n`,

@@ -78,26 +78,40 @@ if (specOutFile) {
     });
 }
 const baseSource = await openApiTs(spec);
-const exportUserCollectionsProperties = [];
+const exportAppCollectionsProperties = [];
 const exportDirectusCollectionsProperties = [];
-for (const [schemaKey, schema] of Object.entries(spec.components.schemas)) {
-    const collectionId = schema[`x-collection`];
-    const line = `  ${collectionId}: components["schemas"]["${schemaKey}"];`;
-    const isUserCollection = schemaKey.startsWith(`Items`);
-    (isUserCollection
-        ? exportUserCollectionsProperties
-        : exportDirectusCollectionsProperties).push(line);
+const exportAllCollectionsTypes = [];
+for (let schemaKey of Object.keys(spec.components.schemas)) {
+    let isAppCollection = false;
+    if (schemaKey.startsWith("Items")) {
+        isAppCollection = true;
+        schemaKey = "App" + schemaKey.slice(5);
+    }
+    const propertyLine = `  ${schemaKey}: components["schemas"]["${schemaKey}"];`;
+    const exportLine = `export type ${schemaKey} = components["schemas"]["${schemaKey}"];`;
+    (isAppCollection
+        ? exportAppCollectionsProperties
+        : exportDirectusCollectionsProperties).push(propertyLine);
+    exportAllCollectionsTypes.push(exportLine);
 }
-const exportUserCollectionsType = `export type ${appCollectionsTypeName} = {\n${exportUserCollectionsProperties.join(`\n`)}\n};\n`;
+const exportAppCollectionsType = `export type ${appCollectionsTypeName} = {\n${exportAppCollectionsProperties.join(`\n`)}\n};\n`;
 const exportDirectusCollectionsType = `export type ${directusCollectionsTypeName} = {\n${exportDirectusCollectionsProperties.join(`\n`)}\n};\n`;
-const exportAllCollectionsType = `export type ${allCollectionsTypeName} = ${directusCollectionsTypeName} & ${appCollectionsTypeName};\n`;
+const exportCollectionsType = `export type ${allCollectionsTypeName} = ${directusCollectionsTypeName} & ${appCollectionsTypeName};\n`;
 const source = [
     baseSource,
-    exportUserCollectionsType,
+    exportAppCollectionsType,
     exportDirectusCollectionsType,
-    exportAllCollectionsType,
+    exportCollectionsType,
+    exportAllCollectionsTypes
 ].join(`\n`);
 await writeFile(resolve(process.cwd(), outFile), source, {
     encoding: `utf-8`,
 });
+/*
+ - System collections : prefixed with "Directus"
+ - Custom app-specific collections : prefixed with "App"
+ - All System collections bundled under : "DirectusCollections"
+ - All custom app-specific collections bundled under : "AppCollections"
+ - All collections bundled under : "Collections"
+*/ 
 //# sourceMappingURL=cli.js.map
